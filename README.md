@@ -7,7 +7,7 @@ A PoC web client for [LOLDrivers](https://github.com/magicsword-io/LOLDrivers) (
 *This was hacked together in like 2,5 hours, please have mercy*
 
 ## Usage
-Click [here](https://rtfmkiesel.github.io/LOLDrivers-webclient), wait a few seconds, and then select the directory to scan. The default Windows driver directories are:
+Click [here](https://rtfmkiesel.github.io/loldrivers-webclient), wait a few seconds, and then select the directory to scan. The default Windows driver directories are:
 + C:\Windows\System32\drivers
 + C:\Windows\System32\DriverStore\FileRepository
 + C:\WINDOWS\inf
