@@ -15,5 +15,11 @@ Click [here](https://rtfmkiesel.github.io/loldrivers-webclient), wait a few seco
 ## Build
 To build `loldrivers-webclient.wasm` yourself:
 ```sh
+# linux
 GOOS=js GOARCH=wasm go build -o .\assets\loldrivers-webclient.wasm
+
+# windows
+$Env:GOOS = "js"
+$Env:GOARCH ="wasm"
+go build -o .\assets\loldrivers-webclient.wasm
 ```
