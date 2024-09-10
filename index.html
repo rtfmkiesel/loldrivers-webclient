@@ -15,129 +15,135 @@
 	</head>
 	<body>
 		<h1>LOLDrivers-webclient</h1>
-		<p>
-			Please press the button below and choose a folder to scan for known vulnerable and known malicious Windows drivers using <a href="https://loldrivers.io">loldrivers.io</a>.
-			No data is being sent to any server. This scanning happens locally in your browser thanks to the <a href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_API">File System API</a>.
-		</p>
-		<p>
-			The default Windows driver directories are:
-		</p>
-		<ul>
-			<li>C:\Windows\System32\drivers</li>
-			<li>C:\Windows\System32\DriverStore\FileRepository</li>
-			<li>C:\WINDOWS\inf</li>
-		</ul>
-		<button id="select-folder-button">Select Folder</button>
-		<div id="results" style="display: none">
-			<h2>Results</h2>
-			<p>Processed files: <span id=file-counter>0</span></p>
-			<p>Matched:</p>
-			<ul id="match-list"></ul>
-		</div>
+		<main>
+			<p>
+				Please press the button below and choose a folder to scan for known vulnerable and known malicious Windows drivers using <a href="https://loldrivers.io">loldrivers.io</a>.
+				No data is being sent to any server. This scanning happens locally in your browser thanks to the <a href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_API">File System API</a>.
+			</p>
+			<p>
+				The default Windows driver directories are:
+			</p>
+			<ul>
+				<li>C:\Windows\System32\drivers</li>
+				<li>C:\Windows\System32\DriverStore\FileRepository</li>
+				<li>C:\WINDOWS\inf</li>
+			</ul>
+			<button id="select-folder-button">Select Folder</button>
+			<div id="results" style="display: none">
+				<h2>Results</h2>
+				<p>Processed files: <span id=file-counter>0</span></p>
+				<p>Matched:</p>
+				<ul id="match-list"></ul>
+			</div>
+		</main>
 		<footer>
 			<hr>
 			<p>Made with ❤️ and Club-Mate by <a href="https://github.com/rtfmkiesel" target="_blank">@rtfmkiesel</a></p>
 		</footer>
-		<script>
-			let fileCounter = 0; // To count how many file were processed
+	</body>
+	<script>
+		let fileCounter = 0; // To count how many file were processed
 
-			async function selectFolder() {
-			  const dirHandle = await window.showDirectoryPicker(); // File System API
-			  document.getElementById("results").style.display = "block";
-			  await walkDirectory(dirHandle);
+		async function selectFolder() {
+			const dirHandle = await window.showDirectoryPicker(); // File System API
+			document.getElementById("results").style.display = "block";
+			await walkDirectory(dirHandle);
+		}
+	
+		// Walk the dir
+		async function walkDirectory(dirHandle) {
+			for await (const entry of dirHandle.values()) {
+			if (entry.kind === 'file') {
+				const file = await entry.getFile();
+				await lookupFile(file, entry.name); // Found a file, lookup file
+			} else if (entry.kind === 'directory') {
+				await walkDirectory(entry); // Found a directory, walk again
 			}
-		
-			// Walk the dir
-			async function walkDirectory(dirHandle) {
-			  for await (const entry of dirHandle.values()) {
-				if (entry.kind === 'file') {
-				  const file = await entry.getFile();
-				  await lookupFile(file, entry.name); // Found a file, lookup file
-				} else if (entry.kind === 'directory') {
-				  await walkDirectory(entry); // Found a directory, walk again
-				}
-			  }
 			}
-		
-			async function lookupFile(fileHandle, name) {
-			  const fileArrayBuffer = await fileHandle.arrayBuffer();
-			  const fileContent = new Uint8Array(fileArrayBuffer);
-		
-			  const md5Hash = CryptoJS.MD5(CryptoJS.lib.WordArray.create(fileContent)).toString();
-			  const sha1Hash = CryptoJS.SHA1(CryptoJS.lib.WordArray.create(fileContent)).toString();
-			  const sha256Hash = CryptoJS.SHA256(CryptoJS.lib.WordArray.create(fileContent)).toString();
-		
-			  let response = await lookupHash(md5Hash);
-			  if (!response.ok) {
-				// No MD5, try SHA1
-				response = await lookupHash(sha1Hash);
-				if (!response.ok) {
-					// No SHA1, try SHA256
-				  response = await lookupHash(sha256Hash);
-				}
-			  }
-		
-			  if (response.ok) {
-				addFileToList(name, JSON.parse(response.driver));
-			  } 
+		}
+	
+		async function lookupFile(fileHandle, name) {
+			const fileArrayBuffer = await fileHandle.arrayBuffer();
+			const fileContent = new Uint8Array(fileArrayBuffer);
+	
+			const md5Hash = CryptoJS.MD5(CryptoJS.lib.WordArray.create(fileContent)).toString();
+			const sha1Hash = CryptoJS.SHA1(CryptoJS.lib.WordArray.create(fileContent)).toString();
+			const sha256Hash = CryptoJS.SHA256(CryptoJS.lib.WordArray.create(fileContent)).toString();
+	
+			let response = await lookupHash(md5Hash);
+			if (!response.ok) {
+			// No MD5, try SHA1
+			response = await lookupHash(sha1Hash);
+			if (!response.ok) {
+				// No SHA1, try SHA256
+				response = await lookupHash(sha256Hash);
+			}
+			}
+	
+			if (response.ok) {
+			addFileToList(name, JSON.parse(response.driver));
+			} 
 
-			  updateCounter();
-			}
+			updateCounter();
+		}
 
-			function updateCounter() {
-				fileCounter++
-				document.getElementById("file-counter").innerText = fileCounter;
-			}
+		function updateCounter() {
+			fileCounter++
+			document.getElementById("file-counter").innerText = fileCounter;
+		}
 
-			function addFileToList(name, driver) {
-				const li = document.createElement("li");
-				li.innerHTML = `${name} <a href="https://loldrivers.io/drivers/${driver.Id}" target="_blank">↗</a>`;
-				li.className = "match-entry";
-				document.getElementById("match-list").appendChild(li);
-			}
-			
+		function addFileToList(name, driver) {
+			const li = document.createElement("li");
+			li.innerHTML = `${name} <a href="https://loldrivers.io/drivers/${driver.Id}" target="_blank">↗</a>`;
+			li.className = "match-entry";
+			document.getElementById("match-list").appendChild(li);
+		}
+
+		if ("showDirectoryPicker" in window) {
 			document.getElementById("select-folder-button").addEventListener("click", selectFolder);
-		  </script>
-		  <style>
-			body {
-				max-width: 70ch;
-				margin: 1rem auto;
-				font-family: monospace;
-				font-size: large;
-				line-height: 1.75;
-				color: #d0d0d0;
-				background-color: #0c0d10;
-			}
+		} else {
+			document.querySelector("main").innerHTML = "<p>Your browser does not support the <a href='https://developer.mozilla.org/en-US/docs/Web/API/File_System_API'>File System API↗</a>. Please switch to a compatible browser like Chrome or Edge.</p>"
+		}
+		</script>
+		<style>
+		body {
+			max-width: 70ch;
+			margin: 1rem auto;
+			font-family: monospace;
+			font-size: large;
+			line-height: 1.75;
+			color: #d0d0d0;
+			background-color: #0c0d10;
+		}
 
-			button {
-				font-family: monospace;
-				font-size: large;
+		button {
+			font-family: monospace;
+			font-size: large;
+		}
+
+		a,
+		a:active {
+			color:aqua;
+		}
+
+		footer {
+			margin-top: 1rem;
+		}
+
+		.match-entry {
+			color: rgb(255, 50, 50);
+		}
+
+		@media (prefers-color-scheme: light) {
+			body {
+				color: rgb(31, 31, 31);
+				background-color: #fff;
 			}
 
 			a,
 			a:active {
-				color:aqua;
+				color: blue;
 			}
-
-			footer {
-				margin-top: 1rem;
-			}
-
-			.match-entry {
-				color: rgb(255, 50, 50);
-			}
-
-			@media (prefers-color-scheme: light) {
-				body {
-					color: rgb(31, 31, 31);
-					background-color: #fff;
-				}
-
-				a,
-				a:active {
-					color: blue;
-				}
-			}
-		  </style>
-	</body>
+		}
+		</style>
 </html>
