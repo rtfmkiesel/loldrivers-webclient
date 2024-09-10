@@ -72,7 +72,7 @@
 				// No MD5, try SHA1
 				response = await lookupHash(sha1Hash);
 				if (!response.ok) {
-					// No SHA1, try SHA2
+					// No SHA1, try SHA256
 				  response = await lookupHash(sha256Hash);
 				}
 			  }
@@ -125,6 +125,18 @@
 
 			.match-entry {
 				color: rgb(255, 50, 50);
+			}
+
+			@media (prefers-color-scheme: light) {
+				body {
+					color: rgb(31, 31, 31);
+					background-color: #fff;
+				}
+
+				a,
+				a:active {
+					color: blue;
+				}
 			}
 		  </style>
 	</body>
