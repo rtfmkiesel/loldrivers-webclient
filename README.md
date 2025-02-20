@@ -7,10 +7,13 @@ A PoC web client for [LOLDrivers](https://github.com/magicsword-io/LOLDrivers) (
 *This was hacked together in like 2,5 hours, please have mercy*
 
 ## Usage
-Click [here](https://rtfmkiesel.github.io/loldrivers-webclient), wait a few seconds, and then select the directory to scan. The default Windows driver directories are:
-+ C:\Windows\System32\drivers
-+ C:\Windows\System32\DriverStore\FileRepository
-+ C:\WINDOWS\inf
+
+Due to changes in the File System Access API, scanning the default Windows folders containing drivers is no longer possible. See [this](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access#restricted_folders).
+
+<del>Click [here](https://rtfmkiesel.github.io/loldrivers-webclient), wait a few seconds, and then select the directory to scan. The default Windows driver directories are:</del>  
+<del>+ C:\Windows\System32\drivers</del>  
+<del>+ C:\Windows\System32\DriverStore\FileRepository</del>  
+<del>+ C:\WINDOWS\inf</del>  
 
 ## Build
 To build `loldrivers-webclient.wasm` yourself:
